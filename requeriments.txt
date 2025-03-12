@@ -1,0 +1,6 @@
+fastapi
+mysql.connector
+dotenv
+uvicorn
+jose
+passlib
