@@ -220,5 +220,29 @@ async def create_moderador(moderador: Dict):
     except Error as e:
         print(e)
 
+@app.post('/nota')
+async def create_nota(nota: Dict):
+    try:
+        conn=sql.connect('db_web.db')
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO notas (aluno_id, aula_id, nota_final) VALUES (?, ?, ?, ?, ?)", (nota['aluno_id'], nota['aula_id'], nota['nota_final']))
+        conn.commit()
+        conn.close()
+        return {"nota": nota}
+    except Error as e:
+        print(e)
+@app.post('/nota/{id}')
+async def get_nota(id: int, nota: Dict):
+    try:
+        conn=sql.connect('db_web.db')
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE notas SET exercicios_acertados={nota["exercicios_acertados"]}, exercicios_errados{nota["exercicios_errados"]} WHERE id={id}")
+        data=cursor.fetchone()
+        conn.close()
+        return {"nota": data}
+    except Error as e:
+        print(e)
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000,)
+
+
