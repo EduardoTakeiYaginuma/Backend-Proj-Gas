@@ -242,6 +242,17 @@ async def get_nota(id: int, nota: Dict):
         return {"nota": data}
     except Error as e:
         print(e)
+@app.get('/nota_final/{id}')
+async def get_nota_final():
+    try:
+        conn=sql.connect('db_web.db')
+        cursor = conn.cursor()
+        cursor.execute(f"UPDATE notas SET nota_final=(exercicios_acertados/exercicios_errados)*10 WHERE id={id}")
+        data=cursor.fetchone()
+        conn.close()
+        return {"nota": data}
+    except Error as e:
+        print(e)
 if __name__ == '__main__':
     uvicorn.run(app, host="0.0.0.0", port=8000,)
 
