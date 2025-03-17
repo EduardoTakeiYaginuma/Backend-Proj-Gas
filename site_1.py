@@ -69,7 +69,7 @@ async def get_aula(id: int):
         cursor.execute(f"SELECT * FROM aula WHERE id={id}")
         data=cursor.fetchone()
         conn.close()
-        return {json.dumps(data)}
+        return {data} 
     except Error as e:
         print(e)
 
@@ -121,7 +121,6 @@ async def create_exercicio(exercicio: Dict):
     try:
         conn=sql.connect('db_web.db')
         cursor = conn.cursor()
-        resposta_json = json.dumps(exercicio['resposta'])
         cursor.execute(f"INSERT INTO exercicios (enunciado, resposta, explicaçao, resposta_correta) VALUES ('{exercicio['enunciado']}', '{json.dumps(exercicio['resposta'])}', '{exercicio['explicaçao']}', '{exercicio['resposta_correta']}')")
         conn.commit()
         conn.close()
