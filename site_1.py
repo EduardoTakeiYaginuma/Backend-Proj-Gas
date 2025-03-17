@@ -7,6 +7,26 @@ from mysql.connector import Error
 from dotenv import load_dotenv
 from typing import List, Dict
 import sqlite3 as sql
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
+
+
+app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas as origens (use com cuidado em produção)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos HTTP
+    allow_headers=["*"],  # Permite todos os headers
+)
+
 
 # load_dotenv('.env')
 
@@ -28,9 +48,8 @@ import sqlite3 as sql
 #         print(f"Erro: {err}")
 #         return None
 
-app = FastAPI()
 
-@app.get('/')
+@app.get('/homeAluno')
 async def index():
     try:
         conn=sql.connect('db_web.db')
@@ -38,11 +57,11 @@ async def index():
         cursor.execute("SELECT * FROM aula")
         data=cursor.fetchall()
         conn.close()
-        return {"aula": data}
+        return {"aula": json.dumps(data)}
     except Error as e:
         print(e)
 
-@app.get('/aula/{id}')
+@app.get('/fazer/aula/{id}')
 async def get_aula(id: int):
     try:
         conn=sql.connect('db_web.db')
@@ -50,7 +69,7 @@ async def get_aula(id: int):
         cursor.execute(f"SELECT * FROM aula WHERE id={id}")
         data=cursor.fetchone()
         conn.close()
-        return {"aula": data}
+        return {json.dumps(data)}
     except Error as e:
         print(e)
 
@@ -110,17 +129,26 @@ async def create_exercicio(exercicio: Dict):
     except Error as e:
         print(e)
     
-@app.get('/exercicio/{id}')
+@app.get('/fazer/exercicio/{id}')
 async def get_exercicio(id: int):
     try:
-        conn=sql.connect('db_web.db')
+        conn = sql.connect('db_web.db')
         cursor = conn.cursor()
         cursor.execute(f"SELECT * FROM exercicios WHERE id={id}")
-        data=cursor.fetchone()
+        data = cursor.fetchone()
         conn.close()
-        return {"exercicio": data}
+
+        # Verifica se 'data' é None
+        if data is None:
+            return {"error": "Exercício não encontrado"}
+
+        # Retorna o dado em formato JSON (sem necessidade de usar json.dumps manualmente)
+        return {data}
+
     except Error as e:
         print(e)
+        return {"error": "Erro ao buscar exercício"}
+
 
 @app.delete('/exercicio/{id}')
 
@@ -236,7 +264,7 @@ async def get_nota(id: int, nota: Dict):
     try:
         conn=sql.connect('db_web.db')
         cursor = conn.cursor()
-        cursor.execute(f"UPDATE notas SET exercicios_acertados={nota["exercicios_acertados"]}, exercicios_errados{nota["exercicios_errados"]} WHERE id={id}")
+        cursor.execute(f"UPDATE notas SET exercicios_acertados={nota['exercicios_acertados']}, exercicios_errados{nota['exercicios_errados']} WHERE id={id}")
         data=cursor.fetchone()
         conn.close()
         return {"nota": data}
