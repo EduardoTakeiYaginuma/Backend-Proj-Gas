@@ -55,10 +55,10 @@ async def index():
         conn=sql.connect('db_web.db')
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM aula")
-        row=cursor.fetchall()
-        data = {cursor.description[i][0]: value for i, value in enumerate(row)} if row else None
+        rows = cursor.fetchall()
+        data = [dict(zip([column[0] for column in cursor.description], row)) for row in rows] if rows else None
         conn.close()
-        return {data}
+        return {"aula":data}
     except Error as e:
         print(e)
 
@@ -87,7 +87,7 @@ async def create_aula(aula: Dict):
             result = cursor.fetchone()
             if result:
                 dados.append(result)
-        cursor.execute("INSERT INTO aula (professor_id, exercicios) VALUES (?, ?)", (1, json.dumps(dados)))
+        cursor.execute("INSERT INTO aula (titulo,score,prazo, exercicios) VALUES (?,?,?, ?)", (aula['titulo'],0,aula['prazo'], json.dumps(dados)))
         conn.commit()
         aula_id = cursor.lastrowid
         cursor.execute("SELECT * FROM aula WHERE id=?", (aula_id,))
@@ -123,7 +123,7 @@ async def update_aula(id: int, aula: Dict):
             result = cursor.fetchone()
             if result:
                 dados.append(result)
-        cursor.execute("UPDATE aula SET exercicios=? WHERE id=?", ( json.dumps(dados), id))
+        cursor.execute("UPDATE aula SET exercicios=?, prazo=?,score=? WHERE id=?", ( json.dumps(dados),aula['prazo'],0, id))
         conn.commit()
         cursor.execute(f"SELECT * FROM aula WHERE id={id}")
         row = cursor.fetchone()
