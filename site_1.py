@@ -55,9 +55,10 @@ async def index():
         conn=sql.connect('db_web.db')
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM aula")
-        data=cursor.fetchall()
+        row=cursor.fetchall()
+        data = {cursor.description[i][0]: value for i, value in enumerate(row)} if row else None
         conn.close()
-        return {"aula": json.dumps(data)}
+        return {data}
     except Error as e:
         print(e)
 
