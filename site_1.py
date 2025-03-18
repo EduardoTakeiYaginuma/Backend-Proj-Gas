@@ -73,21 +73,30 @@ async def get_aula(id: int):
     except Error as e:
         print(e)
 
-@app.post('/aula')
+@app.post('/aula/criar')
 async def create_aula(aula: Dict):
     try:
-        conn=sql.connect('db_web.db')
+        dados = []
+        conn = sql.connect('db_web.db')
         cursor = conn.cursor()
-        data = []
         for exercicio_id in aula['exercicios']:
-            cursor.execute("SELECT * FROM exercicios WHERE id=?", (exercicio_id,))
-            data.extend(cursor.fetchall())
-        cursor.execute("INSERT INTO aula (professor_id, exercicios) VALUES (?, ?)", (aula['professor_id'], json.dumps(data)))
+            cursor.execute("INSERT INTO exercicios (enunciado, resposta, explicaçao, resposta_correta) VALUES (?, ?, ?, ?)", (exercicio_id["enunciado"],json.dumps(exercicio_id["respostas"]),exercicio_id["explicaçao"],exercicio_id["respostaCorreta"]),)
+            result_id = cursor.lastrowid
+            cursor.execute("SELECT * FROM exercicios WHERE id=?", (result_id,))
+            result = cursor.fetchone()
+            if result:
+                dados.append(result)
+        cursor.execute("INSERT INTO aula (professor_id, exercicios) VALUES (?, ?)", (1, json.dumps(dados)))
         conn.commit()
+        aula_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM aula WHERE id=?", (aula_id,))
+        row = cursor.fetchone()
+        aula = {cursor.description[i][0]: value for i, value in enumerate(row)} if row else None
         conn.close()
         return {"aula": aula}
     except Error as e:
         print(e)
+        return {"error": "Erro ao criar aula"}
 @app.get('/aula/{id}/editar')
 async def edit_aula(id: int):
     try:
