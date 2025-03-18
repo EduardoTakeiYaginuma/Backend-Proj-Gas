@@ -183,7 +183,7 @@ async def delete_exercicio(id: int):
     except Error as e:
         print(e)
 
-@app.post('/register')
+@app.post('/usuarios/criar')
 
 async def register(usuario: Dict):
     try:
