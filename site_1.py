@@ -88,20 +88,41 @@ async def create_aula(aula: Dict):
         return {"aula": aula}
     except Error as e:
         print(e)
-
-@app.put('/aula/{id}')
+@app.get('/aula/{id}/editar')
+async def edit_aula(id: int):
+    try:
+        conn = sql.connect('db_web.db')
+        cursor = conn.cursor()
+        cursor.execute(f"SELECT * FROM aula WHERE id={id}")
+        row = cursor.fetchone()
+        data = {cursor.description[i][0]: row[i] for i in range(len(cursor.description))} if row else None
+        conn.close()
+        return {"aula": data}
+    except Error as e:
+        print(e)
+        return {"error": "Erro ao editar aula"}
+@app.put('/aula/{id}/editar')
 async def update_aula(id: int, aula: Dict):
     try:
-        conn=sql.connect('db_web.db')
+        dados = []
+        conn = sql.connect('db_web.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM exercicos WHERE id=?", (aula['exercicios'],))
-        data = cursor.fetchall()
-        cursor.execute("UPDATE aula SET professor_id=?, exercicios=? WHERE id=?", (aula['professor_id'], json.dumps(data), id))
+        for exercicio_id in aula['exercicios']:
+            cursor.execute("UPDATE exercicios SET enunciado=? , resposta=? , explicaçao=?, resposta_correta=? WHERE id=?", (exercicio_id[1],json.dumps(exercicio_id[2]),exercicio_id[3],exercicio_id[4],exercicio_id[0],))
+            cursor.execute("SELECT * FROM exercicios WHERE id=?", (exercicio_id[0],))
+            result = cursor.fetchone()
+            if result:
+                dados.append(result)
+        cursor.execute("UPDATE aula SET exercicios=? WHERE id=?", ( json.dumps(dados), id))
         conn.commit()
+        cursor.execute(f"SELECT * FROM aula WHERE id={id}")
+        row = cursor.fetchone()
+        aula = {cursor.description[i][0]: value for i, value in enumerate(row)} if row else None
         conn.close()
         return {"aula": aula}
     except Error as e:
         print(e)
+        return {"error": "Erro ao atualizar aula"}
 
 @app.delete('/aula/{id}')
 async def delete_aula(id: int):
@@ -193,6 +214,20 @@ async def login(usuario: Dict):
         return {"usuario": data}
     except Error as e:
         print(e)
+@app.get('/usuarios')
+async def get_usuarios():
+    try:
+        conn = sql.connect('db_web.db')
+        conn.row_factory = sql.Row  # This allows us to access columns by name
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM usuario")
+        rows = cursor.fetchall()
+        data = [dict(row) for row in rows]  # Convert rows to list of dictionaries
+        conn.close()
+        return {"usuarios": data}
+    except Error as e:
+        print(e)
+        return {"error": "Erro ao buscar usuários"}
 
 @app.get('/usuario/{id}')
 
