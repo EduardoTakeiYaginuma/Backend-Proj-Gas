@@ -87,7 +87,7 @@ async def create_aula(aula: Dict):
             result = cursor.fetchone()
             if result:
                 dados.append(result)
-        cursor.execute("INSERT INTO aula (titulo,score,prazo, exercicios) VALUES (?,?,?, ?)", (aula['titulo'],0,aula['prazo'], json.dumps(dados)))
+        cursor.execute("INSERT INTO aula (titulo,score,prazo, exercicios) VALUES (?,?,?, ?)", (aula['titulo'],90,aula['prazo'], json.dumps(dados)))
         conn.commit()
         aula_id = cursor.lastrowid
         cursor.execute("SELECT * FROM aula WHERE id=?", (aula_id,))
