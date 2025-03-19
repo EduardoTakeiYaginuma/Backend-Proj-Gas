@@ -19,6 +19,9 @@ sql ='''CREATE TABLE "usuario" (
 cur.execute(sql)
 cur.execute("DROP TABLE IF EXISTS aula")
 sql = '''CREATE TABLE "aula" (
+    'titulo' TEXT,
+    'prazo' TEXT,
+    'score' INTEGER,
     'id' INTEGER PRIMARY KEY AUTOINCREMENT,
     'professor_id' INTEGER,
     'exercicios' TEXT
