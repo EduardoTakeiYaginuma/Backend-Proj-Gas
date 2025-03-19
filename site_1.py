@@ -297,7 +297,7 @@ async def create_nota(nota: Dict):
     try:
         conn=sql.connect('db_web.db')
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO notas (aluno_id, aula_id, nota_final) VALUES (?, ?, ?, ?, ?)", (nota['aluno_id'], nota['aula_id'], nota['nota_final']))
+        cursor.execute("INSERT INTO notas (aluno_id, aula_id, exercicios_acertados, exercicios_errados, nota_final) VALUES (?, ?, ?, ?, ?)", (nota['aluno_id'], nota['aula_id'], nota['exercicios_acertados'], nota['exercicios_errados'], nota['nota_final']))
         conn.commit()
         conn.close()
         return {"nota": nota}
@@ -314,6 +314,21 @@ async def get_nota(id: int, nota: Dict):
         return {"nota": data}
     except Error as e:
         print(e)
+
+@app.get('/nota')
+async def get_notas():
+    try:
+        conn = sql.connect('db_web.db')
+        conn.row_factory = sql.Row  # This allows us to access columns by name
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM notas")
+        rows = cursor.fetchall()
+        data = [dict(row) for row in rows]  # Convert rows to list of dictionaries
+        conn.close()
+        return {"notas": data}
+    except Error as e:
+        print(e)
+        return {"error": "Erro ao buscar usuários"}
 @app.get('/nota_final/{id}')
 async def get_nota_final():
     try:
